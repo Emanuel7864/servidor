@@ -1,0 +1,209 @@
+<nav>
+    <ul>
+      <li><a href="#inicio">Inicio</a></li>
+      <li><a href="#inventario">Inventario</a></li>
+      <li><a href="#productos">Productos</a></li>
+      <li><a href="#entradas-salidas">Entradas y Salidas</a></li>
+      <li><a href="#proveedores">Proveedores</a></li>
+      <li><a href="#reportes">Reportes</a></li>
+    </ul>
+  </nav>
+  <div class="dashboard">
+    <div class="stat">
+      <h3>Total de productos</h3>
+      <p>500</p>
+    </div>
+    <div class="stat">
+      <h3>Stock bajo</h3>
+      <p>10 productos</p>
+    </div>
+    <div class="stat">
+      <h3>Productos vendidos</h3>
+      <p>2500</p>
+    </div>
+  </div>
+  <table class="inventory-table">
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Categoría</th>
+        <th>Cantidad</th>
+        <th>Precio</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Producto 1</td>
+        <td>Categoría A</td>
+        <td>50</td>
+        <td>$20.00</td>
+        <td>
+          <button>Editar</button>
+          <button>Eliminar</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Producto 2</td>
+        <td>Categoría B</td>
+        <td>20</td>
+        <td>$15.00</td>
+        <td>
+          <button>Editar</button>
+          <button>Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <form class="add-product-form">
+    <label for="product-name">Nombre del Producto</label>
+    <input type="text" id="product-name" name="product-name" required>
+  
+    <label for="category">Categoría</label>
+    <select id="category" name="category">
+      <option value="A">Categoría A</option>
+      <option value="B">Categoría B</option>
+    </select>
+  
+    <label for="quantity">Cantidad</label>
+    <input type="number" id="quantity" name="quantity" required>
+  
+    <label for="price">Precio</label>
+    <input type="number" id="price" name="price" step="0.01" required>
+  
+    <button type="submit">Agregar Producto</button>
+  </form>
+  <div class="transaction-form">
+    <h2>Registrar Movimiento</h2>
+    <form>
+      <label for="product">Producto</label>
+      <select id="product">
+        <option>Producto 1</option>
+        <option>Producto 2</option>
+      </select>
+  
+      <label for="quantity">Cantidad</label>
+      <input type="number" id="quantity" required>
+  
+      <label for="transaction-type">Tipo de Movimiento</label>
+      <select id="transaction-type">
+        <option value="entrada">Entrada</option>
+        <option value="salida">Salida</option>
+      </select>
+  
+      <button type="submit">Registrar</button>
+    </form>
+  </div>
+  <div class="report-section">
+    <h2>Generar Reportes</h2>
+    <form>
+      <label for="report-type">Tipo de Reporte</label>
+      <select id="report-type">
+        <option value="general">Reporte General</option>
+        <option value="producto">Por Producto</option>
+        <option value="categoria">Por Categoría</option>
+      </select>
+  
+      <label for="start-date">Fecha Inicio</label>
+      <input type="date" id="start-date" required>
+  
+      <label for="end-date">Fecha Fin</label>
+      <input type="date" id="end-date" required>
+  
+      <button type="submit">Generar</button>
+    </form>
+  </div>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/prueba.css') }}">
+  <script>
+    let inventory = [
+      { name: "Producto 1", category: "Categoría A", quantity: 50, price: 20.0 },
+      { name: "Producto 2", category: "Categoría B", quantity: 20, price: 15.0 }
+    ];
+  
+    function updateInventoryTable() {
+      const tableBody = document.querySelector(".inventory-table tbody");
+      tableBody.innerHTML = "";
+      inventory.forEach((product, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${product.name}</td>
+          <td>${product.category}</td>
+          <td>${product.quantity}</td>
+          <td>$${product.price.toFixed(2)}</td>
+          <td>
+            <button onclick="editProduct(${index})">Editar</button>
+            <button onclick="deleteProduct(${index})">Eliminar</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+  
+    document.querySelector(".add-product-form").addEventListener("submit", function(event) {
+      event.preventDefault();
+      const name = document.getElementById("product-name").value;
+      const category = document.getElementById("category").value;
+      const quantity = parseInt(document.getElementById("quantity").value, 10);
+      const price = parseFloat(document.getElementById("price").value);
+  
+      inventory.push({ name, category, quantity, price });
+      updateInventoryTable();
+      this.reset();
+    });
+  
+    function deleteProduct(index) {
+      inventory.splice(index, 1);
+      updateInventoryTable();
+    }
+  
+    function editProduct(index) {
+      const product = inventory[index];
+      document.getElementById("product-name").value = product.name;
+      document.getElementById("category").value = product.category;
+      document.getElementById("quantity").value = product.quantity;
+      document.getElementById("price").value = product.price;
+  
+      document.querySelector(".add-product-form button").textContent = "Actualizar Producto";
+      document.querySelector(".add-product-form").onsubmit = function (event) {
+        event.preventDefault();
+        inventory[index] = {
+          name: document.getElementById("product-name").value,
+          category: document.getElementById("category").value,
+          quantity: parseInt(document.getElementById("quantity").value, 10),
+          price: parseFloat(document.getElementById("price").value)
+        };
+        updateInventoryTable();
+        this.reset();
+        this.onsubmit = addProductHandler;
+        document.querySelector(".add-product-form button").textContent = "Agregar Producto";
+      };
+    }
+  
+    document.querySelector(".transaction-form form").addEventListener("submit", function(event) {
+      event.preventDefault();
+      const productName = document.getElementById("product").value;
+      const transactionQuantity = parseInt(document.getElementById("quantity").value, 10);
+      const transactionType = document.getElementById("transaction-type").value;
+  
+      const product = inventory.find(p => p.name === productName);
+      if (product) {
+        product.quantity += (transactionType === "entrada" ? transactionQuantity : -transactionQuantity);
+        updateInventoryTable();
+      }
+      this.reset();
+    });
+  
+    document.querySelector(".report-section form").addEventListener("submit", function(event) {
+      event.preventDefault();
+      const reportType = document.getElementById("report-type").value;
+      const startDate = new Date(document.getElementById("start-date").value);
+      const endDate = new Date(document.getElementById("end-date").value);
+  
+      console.log(`Generando reporte ${reportType} de ${startDate.toLocaleDateString()} a ${endDate.toLocaleDateString()}`);
+      alert(`Reporte ${reportType} generado`);
+    });
+  
+    updateInventoryTable();
+  </script>
+  </body>
+  </html>
